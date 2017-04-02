@@ -4,6 +4,8 @@ import org.dissernet.comparer.MonoLauncher;
 import org.dissernet.comparer.web.entity.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,26 +29,25 @@ public class ComparerRestController {
     private String tempFileDirectory;
 
     @RequestMapping(method = RequestMethod.POST, value = "/evaluate")
-    public Response takeFile(@RequestParam("uploadedFile") MultipartFile mpFile) {
+    public ResponseEntity<Response> takeFile(@RequestParam("uploadedFile") MultipartFile mpFile) {
         Response response = null;
         if (mpFile.isEmpty()) {
             response = new Response("File is empty", true);
-            return response;
+            return new ResponseEntity<Response>(response, HttpStatus.NO_CONTENT);
         }
         String originalFilename = mpFile.getOriginalFilename();
         if (!isAcceptableFormat(originalFilename)) {
             response = new Response("File format incorrect. Only txt, pdf, doc is acceptable.", true);
-            return response;
+            return new ResponseEntity<Response>(response, HttpStatus.BAD_REQUEST);
         }
         try {
-            File file = File.createTempFile("", "tmp");
+            File file = File.createTempFile("temploaded", "tmp");
             launcher.processFile(file);
         } catch (IOException e) {
             response = new Response("Can't process files. Internal error.", true);
-            return response;
+            return new ResponseEntity<Response>(response, HttpStatus.CONFLICT);
         }
-        return response;
-
+        return new ResponseEntity<Response>(response, HttpStatus.ACCEPTED);
     }
 
 
