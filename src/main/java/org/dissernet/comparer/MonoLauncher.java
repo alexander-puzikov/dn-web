@@ -22,12 +22,12 @@ public class MonoLauncher {
     @Value(value = "${comparer.directory}")
     String comparerDir;
 
-    public String processFile(File[] files) throws IOException, InterruptedException {
+    public String processFile(File[] files, String resultFormat) throws IOException, InterruptedException {
         logger.info("Processing files. " + files);
         File taskFile = prepareTaskFile(files);
         String absolutePath = taskFile.getAbsolutePath();
         Runtime runtime = Runtime.getRuntime();
-        Process exec = runtime.exec(comparerDir + " -input " + absolutePath + " -format xml");
+        Process exec = runtime.exec(comparerDir + " -input " + absolutePath + " -format " + resultFormat);
         if (exec.waitFor() != 0) {
             throw new IOException("Comparer failed with exception");
         }
@@ -58,7 +58,7 @@ public class MonoLauncher {
                 writer.write(file.getAbsolutePath());
             }
         }
-        logger.info("Task file prepared. ");
+        logger.info("Task file prepared.");
         return tempFile;
     }
 
